@@ -11,7 +11,12 @@
     * [Using Maven](#application-maven)
     * [Using Distro](#application-distro)
 * [License](#license)
-* [Feedback](#feedback)
+* [Contributing](#contributing)
+* [👉 Support Us](#support-us)
+
+| Support the Project! |
+|:-------------|
+| This project is open-source and free to use, both commercially and non-commercially, which is why we need your help in its development. If you like it, please give it a star ⭐ on GitHub — it helps others discover the project and increases its visibility. You can also contribute, for example, by fixing bugs or suggesting improvements — see [Contributing](#contributing). If you can, financial support is always appreciated — see [👉 Support Us](#support-us). Thank you for your support! |
 
 # Overview <a name="overview"></a>
 
@@ -109,10 +114,16 @@ JediTermFX is dual-licensed under both the LGPLv3 (found in the LICENSE-LGPL-3.t
 Apache 2.0 License (found in the LICENSE-APACHE-2.0.txt file in the root directory). You may select, at your option,
 one of the above-listed licenses.
 
-# Feedback <a name="feedback"></a>
+## Contributing <a name="contributing"></a>
 
-Any feedback is welcome. Besides, it would be interesting to know for what cases this project is used. It will
-help to understand the way the project should go and provide more information in documentation.
+We welcome all contributions. You can help by reporting bugs, suggesting improvements, or submitting pull requests
+with fixes and new features. If you have any questions, feel free to reach out — we’ll be happy to assist you.
+
+## 👉 Support Us <a name="support-us"></a>
+
+You can support us financially through [GitHub Sponsors](https://github.com/sponsors/techsenger). Your
+contribution directly helps us keep our open-source projects active, improve their features, and offer ongoing support.
+Besides, we offer multiple sponsorship tiers, with different rewards.
 
 
 
