@@ -16,7 +16,7 @@
 
 | Support the Project! |
 |:-------------|
-| This project is open-source and free to use, both commercially and non-commercially, which is why we need your help in its development. If you like it, please give it a star ⭐ on GitHub — it helps others discover the project and increases its visibility. You can also contribute, for example, by fixing bugs or suggesting improvements — see [Contributing](#contributing). If you can, financial support is always appreciated — see [👉 Support Us](#support-us). Thank you for your support! |
+| This project is open-source and free to use, both commercially and non-commercially, which is why we need your help in its development. If you like it, please give it a star ⭐ on GitHub — it helps others discover the project and increases its visibility. You can also contribute, for example, by fixing bugs 🐛 or suggesting improvements 💡 — see [Contributing](#contributing). If you can, financial support 💰 is always appreciated — see [Support Us](#support-us). Thank you for your support! |
 
 # Overview <a name="overview"></a>
 
