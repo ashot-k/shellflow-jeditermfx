@@ -3,13 +3,13 @@ package com.techsenger.jeditermfx.ui;
 import com.techsenger.jeditermfx.core.compatibility.Point;
 import com.techsenger.jeditermfx.core.model.CharBuffer;
 import com.techsenger.jeditermfx.core.model.SubCharBuffer;
-import kotlin.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import kotlin.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Implementation of substring search based on Rabin-Karp algorithm
@@ -32,7 +32,7 @@ public class SubstringFinder {
 
     private int myPower = 0;
 
-    private final FindResult myResult = new FindResult();
+    private final FindResultImpl myResult = new FindResultImpl();
 
     private final boolean myIgnoreCase;
 
@@ -64,7 +64,7 @@ public class SubstringFinder {
         }
         myCurrentHash = 31 * myCurrentHash + charHash(characters.charAt(index));
         if (myCurrentLength == myPattern.length() && myCurrentHash == myPatternHash) {
-            FindResult.FindItem item = new FindResult.FindItem(myTokens, myFirstIndex, index, -1);
+            FindResultImpl.FindItemImpl item = new FindResultImpl.FindItemImpl(myTokens, myFirstIndex, index, -1);
             String itemText = item.getText();
             boolean matched = myPattern.equals(myIgnoreCase ? itemText.toLowerCase() : itemText);
             if (matched && accept(item)) {
@@ -83,7 +83,7 @@ public class SubstringFinder {
         }
     }
 
-    public boolean accept(@NotNull FindResult.FindItem item) {
+    public boolean accept(@NotNull FindResultImpl.FindItemImpl item) {
         return true;
     }
 
@@ -95,18 +95,19 @@ public class SubstringFinder {
         return myPower * charHash(charAt);
     }
 
-    public FindResult getResult() {
+    public FindResultImpl getResult() {
         return myResult;
     }
 
-    public static final class FindResult {
+    public static final class FindResultImpl implements FindResult {
 
-        private final List<FindItem> items = new ArrayList<>();
+        private final List<FindItemImpl> items = new ArrayList<>();
 
         private final Map<CharBuffer, List<Pair<Integer, Integer>>> ranges = new HashMap<>();
 
         private int selectedItem = 0;
 
+        @Override
         public List<Pair<Integer, Integer>> getRanges(CharBuffer characters) {
             if (characters instanceof SubCharBuffer) {
                 SubCharBuffer subCharBuffer = (SubCharBuffer) characters;
@@ -134,7 +135,7 @@ public class SubstringFinder {
             return start < end ? new Pair<>(start, end) : null;
         }
 
-        public static class FindItem {
+        public static class FindItemImpl implements FindItem {
 
             final ArrayList<TextToken> tokens;
 
@@ -145,7 +146,7 @@ public class SubstringFinder {
             // index in the result list
             final int index;
 
-            private FindItem(ArrayList<TextToken> tokens, int firstIndex, int lastIndex, int index) {
+            private FindItemImpl(ArrayList<TextToken> tokens, int firstIndex, int lastIndex, int index) {
                 this.tokens = new ArrayList<>(tokens);
                 this.firstIndex = firstIndex;
                 this.lastIndex = lastIndex;
@@ -177,15 +178,17 @@ public class SubstringFinder {
                 return getText();
             }
 
-            // one-based index in the result list
+            @Override
             public int getIndex() {
                 return index;
             }
 
+            @Override
             public Point getStart() {
                 return new Point(tokens.get(0).x + firstIndex, tokens.get(0).y);
             }
 
+            @Override
             public Point getEnd() {
                 return new Point(tokens.get(tokens.size() - 1).x + lastIndex, tokens.get(tokens.size() - 1).y);
             }
@@ -206,7 +209,7 @@ public class SubstringFinder {
                 Pair<Integer, Integer> range = new Pair<>(0, lastIndex + 1);
                 put(tokens.get(tokens.size() - 1).buf, range);
             }
-            items.add(new FindItem(tokens, firstIndex, lastIndex, items.size() + 1));
+            items.add(new FindItemImpl(tokens, firstIndex, lastIndex, items.size() + 1));
         }
 
         private void put(CharBuffer characters, Pair<Integer, Integer> range) {
@@ -217,22 +220,26 @@ public class SubstringFinder {
             }
         }
 
+        @Override
         public @NotNull List<FindItem> getItems() {
-            return items;
+            return (List) items;
         }
 
-        public @NotNull FindItem selectedItem() {
+        @Override
+        public @NotNull FindItemImpl selectedItem() {
             assertNotEmpty();
             return items.get(selectedItem);
         }
 
-        public @NotNull FindItem nextFindItem() {
+        @Override
+        public @NotNull FindItemImpl nextFindItem() {
             assertNotEmpty();
             selectedItem = (selectedItem + 1) % items.size();
             return selectedItem();
         }
 
-        public @NotNull FindItem prevFindItem() {
+        @Override
+        public @NotNull FindItemImpl prevFindItem() {
             assertNotEmpty();
             selectedItem = (selectedItem + items.size() - 1) % items.size();
             return selectedItem();

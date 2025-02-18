@@ -17,7 +17,6 @@ import com.techsenger.jeditermfx.core.model.hyperlinks.HyperlinkFilter;
 import com.techsenger.jeditermfx.core.model.hyperlinks.TextProcessing;
 import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
 import com.techsenger.jeditermfx.core.typeahead.TypeAheadTerminalModel;
-import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult;
 import com.techsenger.jeditermfx.ui.model.DefaultTypeAheadTerminalModel;
 import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
 import java.util.HashSet;

@@ -1,16 +1,16 @@
 package com.techsenger.jeditermfx.ui;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import com.techsenger.jeditermfx.core.StyledTextConsumer;
 import com.techsenger.jeditermfx.core.TextStyle;
 import com.techsenger.jeditermfx.core.model.CharBuffer;
 import com.techsenger.jeditermfx.core.model.SubCharBuffer;
 import com.techsenger.jeditermfx.core.model.TerminalTextBuffer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 class TerminalSearchUtil {
 
-    static @Nullable SubstringFinder.FindResult searchInTerminalTextBuffer(@NotNull TerminalTextBuffer textBuffer,
+    static @Nullable FindResult searchInTerminalTextBuffer(@NotNull TerminalTextBuffer textBuffer,
                                                                            @NotNull String pattern, boolean ignoreCase) {
         if (pattern.isEmpty()) {
             return null;

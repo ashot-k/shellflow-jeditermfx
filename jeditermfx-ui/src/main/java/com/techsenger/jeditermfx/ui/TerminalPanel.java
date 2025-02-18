@@ -33,7 +33,6 @@ import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
 import com.techsenger.jeditermfx.core.util.CharUtils;
 import static com.techsenger.jeditermfx.core.util.Platform.isWindows;
 import com.techsenger.jeditermfx.core.util.TermSize;
-import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult.FindItem;
 import com.techsenger.jeditermfx.ui.hyperlinks.LinkInfoEx;
 import com.techsenger.jeditermfx.ui.input.FxMouseEvent;
 import com.techsenger.jeditermfx.ui.input.FxMouseWheelEvent;
@@ -216,7 +215,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     private TerminalCoordinates myCoordsAccessor;
 
-    private SubstringFinder.FindResult myFindResult;
+    private FindResult myFindResult;
 
     private final BooleanProperty findResultHighlighted = new SimpleBooleanProperty(true);
 
@@ -639,28 +638,28 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         myCoordsAccessor = coordAccessor;
     }
 
-    public void setFindResult(@Nullable SubstringFinder.FindResult findResult) {
+    public void setFindResult(@Nullable FindResult findResult) {
         myFindResult = findResult;
         repaint();
     }
 
-    public SubstringFinder.FindResult getFindResult() {
+    public FindResult getFindResult() {
         return myFindResult;
     }
 
-    public @Nullable SubstringFinder.FindResult selectPrevFindResultItem() {
+    public @Nullable FindResult selectPrevFindResultItem() {
         return selectPrevOrNextFindResultItem(false);
     }
 
-    public @Nullable SubstringFinder.FindResult selectNextFindResultItem() {
+    public @Nullable FindResult selectNextFindResultItem() {
         return selectPrevOrNextFindResultItem(true);
     }
 
-    protected @Nullable SubstringFinder.FindResult selectPrevOrNextFindResultItem(boolean next) {
+    protected @Nullable FindResult selectPrevOrNextFindResultItem(boolean next) {
         int historyLineCount = getTerminalTextBuffer().getHistoryLinesCount();
         int screenLineCount = getTerminalTextBuffer().getScreenLinesCount();
         if (myFindResult != null && !myFindResult.getItems().isEmpty()) {
-            FindItem item = next ? myFindResult.nextFindItem() : myFindResult.prevFindItem();
+            FindResult.FindItem item = next ? myFindResult.nextFindItem() : myFindResult.prevFindItem();
             var selection = new TerminalSelection(new Point(item.getStart().x,
                     item.getStart().y - myTerminalTextBuffer.getHistoryLinesCount()),
                     new Point(item.getEnd().x, item.getEnd().y - myTerminalTextBuffer.getHistoryLinesCount()));

@@ -59,16 +59,16 @@ final class FindComponent {
         return ignoreCaseCheckBox;
     }
 
-    private void updateLabel(@Nullable SubstringFinder.FindResult result) {
+    private void updateLabel(@Nullable FindResult result) {
         if (result == null) {
             label.setText("");
         } else if (!result.getItems().isEmpty()) {
-            SubstringFinder.FindResult.FindItem selectedItem = result.selectedItem();
+            FindResult.FindItem selectedItem = result.selectedItem();
             label.setText(selectedItem.getIndex() + " of " + result.getItems().size());
         }
     }
 
-    void onResultUpdated(SubstringFinder.@Nullable FindResult results) {
+    void onResultUpdated(FindResult results) {
         updateLabel(results);
     }
 

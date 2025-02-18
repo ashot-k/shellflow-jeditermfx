@@ -38,7 +38,7 @@ public class SubstringFinderTest {
 
     @Test
     public void test6() {
-        SubstringFinder.FindResult res = getFindResult("aba", "abacaba");
+        SubstringFinder.FindResultImpl res = getFindResult("aba", "abacaba");
         assertEquals(2, res.getItems().size());
         for (int i = 0; i < res.getItems().size(); i++) {
             assertEquals("aba", res.getItems().get(i).getText());
@@ -47,7 +47,7 @@ public class SubstringFinderTest {
 
     @Test
     public void test7() {
-        SubstringFinder.FindResult res = getFindResult("aa", "aaaa");
+        SubstringFinder.FindResultImpl res = getFindResult("aa", "aaaa");
         //after a pattern is matched we start from the next character
         assertEquals(2, res.getItems().size());
         for (int i = 0; i < res.getItems().size(); i++) {
@@ -57,7 +57,7 @@ public class SubstringFinderTest {
 
     @Test
     public void test8() {
-        SubstringFinder.FindResult res = getFindResult("aaa", "aa", "aa", "aa");
+        SubstringFinder.FindResultImpl res = getFindResult("aaa", "aa", "aa", "aa");
         //after a pattern is matched we start from the next character
         assertEquals(2, res.getItems().size());
         for (int i = 0; i < res.getItems().size(); i++) {
@@ -82,21 +82,21 @@ public class SubstringFinderTest {
 
     @Test
     public void testIgnoreCase() {
-        SubstringFinder.FindResult res = getFindResult("abc", " ABC ");
+        SubstringFinder.FindResultImpl res = getFindResult("abc", " ABC ");
         //after a pattern is matched we start from the next character
         assertEquals(1, res.getItems().size());
         assertEquals("ABC", res.getItems().get(0).getText());
     }
 
     private void doTest(String patter, String... strings) {
-        SubstringFinder.FindResult res = getFindResult(patter, strings);
+        SubstringFinder.FindResultImpl res = getFindResult(patter, strings);
 
         assertEquals(1, res.getItems().size());
         assertEquals(patter, res.getItems().get(0).getText());
     }
 
     @NotNull
-    private static SubstringFinder.FindResult getFindResult(@NotNull String patter, String... strings) {
+    private static SubstringFinder.FindResultImpl getFindResult(@NotNull String patter, String... strings) {
         SubstringFinder f = new SubstringFinder(patter, true);
         for (String string : strings) {
             CharBuffer cb = new CharBuffer(string);
