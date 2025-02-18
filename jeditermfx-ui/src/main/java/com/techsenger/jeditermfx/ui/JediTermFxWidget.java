@@ -1,16 +1,26 @@
 package com.techsenger.jeditermfx.ui;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
-import com.techsenger.jeditermfx.core.typeahead.TypeAheadTerminalModel;
+import com.techsenger.jeditermfx.core.Color;
+import com.techsenger.jeditermfx.core.ProcessTtyConnector;
+import com.techsenger.jeditermfx.core.Terminal;
+import com.techsenger.jeditermfx.core.TerminalDisplay;
+import com.techsenger.jeditermfx.core.TerminalExecutorServiceManager;
+import com.techsenger.jeditermfx.core.TerminalMode;
+import com.techsenger.jeditermfx.core.TerminalStarter;
+import com.techsenger.jeditermfx.core.TtyBasedArrayDataStream;
+import com.techsenger.jeditermfx.core.TtyConnector;
+import com.techsenger.jeditermfx.core.model.JediTermDebouncerImpl;
+import com.techsenger.jeditermfx.core.model.JediTerminal;
+import com.techsenger.jeditermfx.core.model.StyleState;
+import com.techsenger.jeditermfx.core.model.TerminalTextBuffer;
 import com.techsenger.jeditermfx.core.model.hyperlinks.HyperlinkFilter;
 import com.techsenger.jeditermfx.core.model.hyperlinks.TextProcessing;
+import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
+import com.techsenger.jeditermfx.core.typeahead.TypeAheadTerminalModel;
+import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult;
+import com.techsenger.jeditermfx.ui.model.DefaultTypeAheadTerminalModel;
 import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -30,21 +40,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import com.techsenger.jeditermfx.core.Color;
-import com.techsenger.jeditermfx.core.ProcessTtyConnector;
-import com.techsenger.jeditermfx.core.Terminal;
-import com.techsenger.jeditermfx.core.TerminalDisplay;
-import com.techsenger.jeditermfx.core.TerminalExecutorServiceManager;
-import com.techsenger.jeditermfx.core.TerminalMode;
-import com.techsenger.jeditermfx.core.TerminalStarter;
-import com.techsenger.jeditermfx.core.TtyBasedArrayDataStream;
-import com.techsenger.jeditermfx.core.TtyConnector;
-import com.techsenger.jeditermfx.core.model.JediTermDebouncerImpl;
-import com.techsenger.jeditermfx.core.model.JediTerminal;
-import com.techsenger.jeditermfx.core.model.StyleState;
-import com.techsenger.jeditermfx.core.model.TerminalTextBuffer;
-import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult;
-import com.techsenger.jeditermfx.ui.model.DefaultTypeAheadTerminalModel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JediTermFX terminal widget with UI implemented in JavaFX.
@@ -63,7 +62,7 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
 
     private final TerminalTypeAheadManager myTypeAheadManager;
 
-    private SearchComponent myFindComponent;
+    private FindComponent myFindComponent;
 
 //TODO
 //  @SuppressWarnings("removal")
@@ -89,7 +88,7 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
 
     private volatile TerminalExecutorServiceManager myExecutorServiceManager;
 
-    private final Set<ScrollBarMark> scrollBarMarkers = new HashSet<>();
+    private final Set<ScrollBarMark> findResultMarkers = new HashSet<>();
 
     public JediTermFxWidget(@NotNull SettingsProvider settingsProvider) {
         this(80, 24, settingsProvider);
@@ -126,7 +125,7 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
         myInnerPanel.getChildren().addAll(canvasPane);
         myInnerPanel.addEventFilter(KeyEvent.KEY_PRESSED, (e) -> {
             if (this.myFindComponent != null && e.getCode() == KeyCode.ESCAPE) {
-                doHideSearchComponent();
+                hideFindComponent();
                 e.consume();
             }
         });
@@ -300,52 +299,39 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
     public List<TerminalAction> getActions() {
         return List.of(new TerminalAction(mySettingsProvider.getFindActionPresentation(),
                 keyEvent -> {
-                    showFindText();
+                    showFindComponent();
                     return true;
                 }).withMnemonicKey(KeyCode.F));
     }
 
-    private void showFindText() {
+    protected void showFindComponent() {
         if (myFindComponent == null) {
-            myFindComponent = createSearchComponent();
+            myFindComponent = createFindComponent();
             final Pane pane = myFindComponent.getPane();
             StackPane.setAlignment(pane, Pos.TOP_RIGHT);
             ScrollBar scrollBar = (ScrollBar) myTerminalPanel.getPane().getChildren().get(1);
             StackPane.setMargin(pane, new Insets(0, scrollBar.getWidth(), 0, 0));
             myInnerPanel.getChildren().add(pane);
             pane.requestFocus();
-            SearchComponentListener listener = new SearchComponentListener() {
-
-                @Override
-                public void searchSettingsChanged(@NotNull String textToFind, boolean ignoreCase) {
-                    removeScrollBarMarkers();
-                    findText(textToFind, ignoreCase);
-                    addScrollBarMarkers();
-                }
-
-                @Override
-                public void hideSearchComponent() {
-                    doHideSearchComponent();
-                }
-
-                @Override
-                public void selectNextFindResult() {
-                    myFindComponent.onResultUpdated(myTerminalPanel.selectNextFindResultItem());
-                }
-
-                @Override
-                public void selectPrevFindResult() {
-                    myFindComponent.onResultUpdated(myTerminalPanel.selectPrevFindResultItem());
-                }
+            Runnable settingsChanged = () -> {
+                removeFindResultMarkers();
+                FindResult results = TerminalSearchUtil.searchInTerminalTextBuffer(getTerminalTextBuffer(),
+                        myFindComponent.getTextField().getText(), myFindComponent.getIgnoreCaseCheckBox().isSelected());
+                myTerminalPanel.setFindResult(results);
+                myFindComponent.onResultUpdated(results);
+                addFindResultMarkers();
             };
-            myFindComponent.addListener(listener);
-            myFindComponent.addKeyPressedListener((keyEvent) -> {
+            myFindComponent.getTextField()
+                    .textProperty().addListener((ov, oldV, newV) -> settingsChanged.run());
+            myFindComponent.getIgnoreCaseCheckBox()
+                    .selectedProperty().addListener((ov, oldV, newV) -> settingsChanged.run());
+            myFindComponent.getTextField().setOnKeyPressed((keyEvent) -> {
                 if (keyEvent.getCode() == KeyCode.ESCAPE) {
-                    listener.hideSearchComponent();
+                    hideFindComponent();
                 } else if (keyEvent.getCode() == KeyCode.ENTER || keyEvent.getCode() == KeyCode.DOWN) {
-                    listener.selectNextFindResult();
+                    myFindComponent.onResultUpdated(myTerminalPanel.selectNextFindResultItem());
                 } else if (keyEvent.getCode() == KeyCode.UP) {
-                    listener.selectPrevFindResult();
+                    myFindComponent.onResultUpdated(myTerminalPanel.selectPrevFindResultItem());
                 }
             });
         } else {
@@ -353,22 +339,45 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
         }
     }
 
-    private void doHideSearchComponent() {
+    protected void hideFindComponent() {
         myInnerPanel.getChildren().remove(myFindComponent.getPane());
-        removeScrollBarMarkers();
+        removeFindResultMarkers();
         myFindComponent = null;
         myTerminalPanel.setFindResult(null);
         myTerminalPanel.getCanvas().requestFocus();
     }
 
-    protected @NotNull SearchComponent createSearchComponent() {
-        return new DefaultSearchComponent(this);
+    protected @NotNull FindComponent createFindComponent() {
+        return new FindComponent(this);
     }
 
-    private void findText(String text, boolean ignoreCase) {
-        FindResult results = TerminalSearchUtil.searchInTerminalTextBuffer(getTerminalTextBuffer(), text, ignoreCase);
-        myTerminalPanel.setFindResult(results);
-        myFindComponent.onResultUpdated(results);
+    protected void addFindResultMarkers() {
+        FindResult result = myTerminalPanel.getFindResult();
+        var scrollBar = myTerminalPanel.getScrollBar();
+        StackPane track = (StackPane) scrollBar.lookup(".track");
+        if (result != null) {
+            int historyLineCount = myTerminalPanel.getTerminalTextBuffer().getHistoryLinesCount();
+            int screenLineCount = myTerminalPanel.getTerminalTextBuffer().getScreenLinesCount();
+            Color color = mySettingsProvider.getTerminalColorPalette()
+                    .getBackground(Objects.requireNonNull(mySettingsProvider.getFoundPatternColor().getBackground()));
+            var fxColor = FxTransformers.toFxColor(color);
+            for (FindResult.FindItem r : result.getItems()) {
+                var marker = new ScrollBarMark(fxColor);
+                var position = FxScrollBarUtils.getValueFor(r.getStart().y, screenLineCount + historyLineCount,
+                        scrollBar.getMin(), scrollBar.getMax());
+                marker.setPosition(position);
+                if (this.findResultMarkers.add(marker)) {
+                    marker.attach(scrollBar, track);
+                }
+            }
+        }
+    }
+
+    protected void removeFindResultMarkers() {
+        for (var m : this.findResultMarkers) {
+            m.detach();
+        }
+        this.findResultMarkers.clear();
     }
 
     @Override
@@ -455,35 +464,6 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
 
     protected void doWithTerminalStarter(@NotNull Consumer<TerminalStarter> consumer) {
         myTerminalStarterFuture.thenAccept(consumer);
-    }
-
-    private void addScrollBarMarkers() {
-        FindResult result = myTerminalPanel.getFindResult();
-        var scrollBar = myTerminalPanel.getScrollBar();
-        StackPane track = (StackPane) scrollBar.lookup(".track");
-        if (result != null) {
-            int historyLineCount = myTerminalPanel.getTerminalTextBuffer().getHistoryLinesCount();
-            int screenLineCount = myTerminalPanel.getTerminalTextBuffer().getScreenLinesCount();
-            Color color = mySettingsProvider.getTerminalColorPalette()
-                    .getBackground(Objects.requireNonNull(mySettingsProvider.getFoundPatternColor().getBackground()));
-            var fxColor = FxTransformers.toFxColor(color);
-            for (FindResult.FindItem r : result.getItems()) {
-                var marker = new ScrollBarMark(fxColor);
-                var position = FxScrollBarUtils.getValueFor(r.getStart().y, screenLineCount + historyLineCount,
-                        scrollBar.getMin(), scrollBar.getMax());
-                marker.setPosition(position);
-                if (this.scrollBarMarkers.add(marker)) {
-                    marker.attach(scrollBar, track);
-                }
-            }
-        }
-    }
-
-    private void removeScrollBarMarkers() {
-        for (var m : this.scrollBarMarkers) {
-            m.detach();
-        }
-        this.scrollBarMarkers.clear();
     }
 
     public void addHyperlinkFilter(HyperlinkFilter filter) {
