@@ -353,9 +353,9 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
 
     protected void addFindResultMarkers() {
         FindResult result = myTerminalPanel.getFindResult();
-        var scrollBar = myTerminalPanel.getScrollBar();
-        StackPane track = (StackPane) scrollBar.lookup(".track");
         if (result != null) {
+            var scrollBar = myTerminalPanel.getScrollBar();
+            StackPane track = (StackPane) scrollBar.lookup(".track");
             int historyLineCount = myTerminalPanel.getTerminalTextBuffer().getHistoryLinesCount();
             int screenLineCount = myTerminalPanel.getTerminalTextBuffer().getScreenLinesCount();
             Color color = mySettingsProvider.getTerminalColorPalette()

@@ -1,79 +1,18 @@
 package com.techsenger.jeditermfx.ui;
 
 import com.techsenger.jeditermfx.core.Color;
-import com.techsenger.jeditermfx.core.TerminalCoordinates;
-import com.techsenger.jeditermfx.core.compatibility.Point;
-import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
-import com.techsenger.jeditermfx.core.util.TermSize;
-import com.techsenger.jeditermfx.ui.hyperlinks.LinkInfoEx;
-import com.techsenger.jeditermfx.ui.input.FxMouseEvent;
-import com.techsenger.jeditermfx.ui.input.FxMouseWheelEvent;
-import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
-import kotlin.Pair;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javafx.scene.text.Font;
-import javafx.scene.input.MouseEvent;
-import java.lang.ref.WeakReference;
-import java.awt.Desktop;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
-import java.awt.event.InputEvent;
-import java.net.URI;
-import java.text.AttributedCharacterIterator;
-import java.text.BreakIterator;
-import java.text.CharacterIterator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import javafx.event.ActionEvent;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.application.Platform;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.ReadOnlyStringProperty;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.event.EventHandler;
-import javafx.geometry.Dimension2D;
-import javafx.geometry.Orientation;
-import javafx.geometry.Point2D;
-import javafx.geometry.Rectangle2D;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseButton;
-import javafx.scene.input.ScrollEvent;
-import javafx.scene.layout.Pane;
-import javafx.scene.shape.StrokeLineCap;
-import javafx.scene.shape.StrokeLineJoin;
-import javafx.scene.text.FontPosture;
-import javafx.scene.text.FontSmoothingType;
-import javafx.scene.text.FontWeight;
-import javafx.scene.Cursor;
-import javafx.scene.control.ContextMenu;
-import javafx.scene.control.ScrollBar;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.util.Duration;
 import com.techsenger.jeditermfx.core.CursorShape;
 import com.techsenger.jeditermfx.core.HyperlinkStyle;
 import com.techsenger.jeditermfx.core.RequestOrigin;
 import com.techsenger.jeditermfx.core.StyledTextConsumer;
 import com.techsenger.jeditermfx.core.TerminalColor;
+import com.techsenger.jeditermfx.core.TerminalCoordinates;
 import com.techsenger.jeditermfx.core.TerminalDisplay;
 import com.techsenger.jeditermfx.core.TerminalOutputStream;
 import com.techsenger.jeditermfx.core.TerminalStarter;
 import com.techsenger.jeditermfx.core.TextStyle;
 import com.techsenger.jeditermfx.core.TextStyle.Option;
+import com.techsenger.jeditermfx.core.compatibility.Point;
 import com.techsenger.jeditermfx.core.emulator.ColorPalette;
 import com.techsenger.jeditermfx.core.emulator.charset.CharacterSets;
 import com.techsenger.jeditermfx.core.emulator.mouse.MouseFormat;
@@ -90,15 +29,78 @@ import com.techsenger.jeditermfx.core.model.TerminalModelListener;
 import com.techsenger.jeditermfx.core.model.TerminalSelection;
 import com.techsenger.jeditermfx.core.model.TerminalTextBuffer;
 import com.techsenger.jeditermfx.core.model.hyperlinks.LinkInfo;
+import com.techsenger.jeditermfx.core.typeahead.TerminalTypeAheadManager;
 import com.techsenger.jeditermfx.core.util.CharUtils;
-import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult.FindItem;
 import static com.techsenger.jeditermfx.core.util.Platform.isWindows;
+import com.techsenger.jeditermfx.core.util.TermSize;
+import com.techsenger.jeditermfx.ui.SubstringFinder.FindResult.FindItem;
+import com.techsenger.jeditermfx.ui.hyperlinks.LinkInfoEx;
+import com.techsenger.jeditermfx.ui.input.FxMouseEvent;
+import com.techsenger.jeditermfx.ui.input.FxMouseWheelEvent;
+import com.techsenger.jeditermfx.ui.settings.SettingsProvider;
+import java.awt.Desktop;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
+import java.awt.event.InputEvent;
+import java.lang.ref.WeakReference;
+import java.net.URI;
+import java.text.AttributedCharacterIterator;
+import java.text.BreakIterator;
+import java.text.CharacterIterator;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.geometry.Dimension2D;
+import javafx.geometry.Orientation;
+import javafx.geometry.Point2D;
+import javafx.geometry.Rectangle2D;
+import javafx.scene.Cursor;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.ScrollBar;
 import javafx.scene.input.InputMethodEvent;
 import javafx.scene.input.InputMethodRequests;
 import javafx.scene.input.InputMethodTextRun;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Priority;
+import javafx.scene.shape.StrokeLineCap;
+import javafx.scene.shape.StrokeLineJoin;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontPosture;
+import javafx.scene.text.FontSmoothingType;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+import kotlin.Pair;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
@@ -207,6 +209,8 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     private SubstringFinder.FindResult myFindResult;
 
+    private final BooleanProperty findResultHighlighted = new SimpleBooleanProperty(true);
+
     private LinkInfo myHoveredHyperlink = null;
 
     private Cursor myCursorType = Cursor.DEFAULT;
@@ -250,6 +254,10 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     public ReadOnlyStringProperty selectedTextProperty() {
         return selectedText.getReadOnlyProperty();
+    }
+
+    public BooleanProperty findResultHighlightedProperty() {
+        return findResultHighlighted;
     }
 
     public Pane getPane() {
@@ -920,7 +928,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
                         public void consume(int x, int y, @NotNull TextStyle style, @NotNull CharBuffer characters, int startRow) {
                             int row = y - startRow;
                             drawCharacters(x, row, style, characters, myFillCharacterBackgroundIncludingLineSpacing);
-                            if (myFindResult != null) {
+                            if (myFindResult != null && findResultHighlighted.get()) {
                                 List<Pair<Integer, Integer>> ranges = myFindResult.getRanges(characters);
                                 if (ranges != null && !ranges.isEmpty()) {
                                     TextStyle foundPatternStyle = getFoundPattern(style);
