@@ -57,11 +57,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -168,9 +168,18 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     private Point mySelectionStartPoint = null;
 
-    private final ReadOnlyObjectWrapper<TerminalSelection> mySelection = new ReadOnlyObjectWrapper<>(null);
+    private final ObjectProperty<TerminalSelection> mySelection = new SimpleObjectProperty<>(null);
 
     private final ReadOnlyStringWrapper selectedText = new ReadOnlyStringWrapper(null);
+
+    /**
+     * The value of the selection property has two types: 1)The user selects text with the mouse. 2) The value is set
+     * programmatically by a client of this class. In the first case, selectedText is updated only when the user
+     * has finished selecting text with the mouse. In the second case, selectedText changes immediately after the
+     * selection property is modified. The value of this variable is used to control the timing of the selectedText
+     * update.
+     */
+    private boolean updateSelectedText = true;
 
     private final TerminalCopyPasteHandler myCopyPasteHandler;
 
@@ -246,12 +255,19 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         terminalTextBuffer.addModelListener(() -> repaint());
         terminalTextBuffer.addTypeAheadModelListener(() -> repaint());
         terminalTextBuffer.addHistoryBufferListener(() -> myHistoryBufferLineCountChanged.set(true));
+        mySelection.addListener((ov, oldV, newV) -> updateSelectedText());
     }
 
-    public ReadOnlyObjectProperty<TerminalSelection> selectionProperty() {
-        return mySelection.getReadOnlyProperty();
+    public ObjectProperty<TerminalSelection> selectionProperty() {
+        return mySelection;
     }
 
+    /**
+     * Returns selected text property. The text is determined only when the user has finished making a selection.
+     * This is done for performance reasons.
+     *
+     * @return
+     */
     public ReadOnlyStringProperty selectedTextProperty() {
         return selectedText.getReadOnlyProperty();
     }
@@ -349,7 +365,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
             if (e.getButton() == MouseButton.PRIMARY) {
                 if (e.getClickCount() == 1) {
                     mySelectionStartPoint = panelToCharCoords(createPoint(e));
-                    doOnTextUnselected();
+                    updateSelection(null, true);
                     repaint();
                 }
             }
@@ -357,7 +373,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         this.canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, e -> {
             this.canvas.requestFocus();
             if (mySelection.get() != null) {
-                doOnTextSelected();
+                updateSelectedText();
             }
             repaint();
         });
@@ -402,7 +418,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
             if (mySelectionStartPoint == null) {
                 mySelectionStartPoint = charCoords;
             }
-            mySelection.set(new TerminalSelection(new Point(mySelectionStartPoint)));
+            updateSelection(new TerminalSelection(new Point(mySelectionStartPoint)), false);
         }
         repaint();
         mySelection.get().updateEnd(charCoords);
@@ -436,9 +452,9 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
                 final Point charCoords = panelToCharCoords(point);
                 Point start = SelectionUtil.getPreviousSeparator(charCoords, myTerminalTextBuffer);
                 Point stop = SelectionUtil.getNextSeparator(charCoords, myTerminalTextBuffer);
-                mySelection.set(new TerminalSelection(start));
-                mySelection.get().updateEnd(stop);
-                doOnTextSelected();
+                var sel = new TerminalSelection(start);
+                sel.updateEnd(stop);
+                updateSelection(sel, true);
                 if (mySettingsProvider.copyOnSelect()) {
                     handleCopyOnSelect();
                 }
@@ -455,9 +471,9 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
                         && myTerminalTextBuffer.getLine(endLine).isWrapped()) {
                     endLine++;
                 }
-                mySelection.set(new TerminalSelection(new Point(0, startLine)));
-                mySelection.get().updateEnd(new Point(myTermSize.getColumns(), endLine));
-                doOnTextSelected();
+                var sel = new TerminalSelection(new Point(0, startLine));
+                sel.updateEnd(new Point(myTermSize.getColumns(), endLine));
+                updateSelection(sel, true);
                 if (mySettingsProvider.copyOnSelect()) {
                     handleCopyOnSelect();
                 }
@@ -648,8 +664,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
             var selection = new TerminalSelection(new Point(item.getStart().x,
                     item.getStart().y - myTerminalTextBuffer.getHistoryLinesCount()),
                     new Point(item.getEnd().x, item.getEnd().y - myTerminalTextBuffer.getHistoryLinesCount()));
-            mySelection.set(selection);
-            doOnTextSelected();
+            updateSelection(selection, true);
             logger.debug("Find selection start: {} / {}, end: {} / {}", item.getStart().x, item.getStart().y,
                     item.getEnd().x, item.getEnd().y);
             if (mySelection.get().getStart().y < getTerminalTextBuffer().getHeight() / 2) {
@@ -1172,7 +1187,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         });
         this.canvas.addEventHandler(ScrollEvent.SCROLL, e -> {
             if (mySettingsProvider.enableMouseReporting() && isRemoteMouseAction(e)) {
-                doOnTextUnselected();
+                updateSelection(null, true);
                 Point p = panelToCharCoords(createPoint(e));
                 listener.mouseWheelMoved(p.x, p.y, new FxMouseWheelEvent(e));
             }
@@ -1638,7 +1653,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
     @Override
     public void scrollArea(final int scrollRegionTop, final int scrollRegionSize, int dy) {
         scrollDy.addAndGet(dy);
-        doOnTextUnselected();
+        updateSelection(null, true);
     }
 
     // should be called on EDT
@@ -1877,8 +1892,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
     public void selectAll() {
         var selection = new TerminalSelection(new Point(0, -myTerminalTextBuffer.getHistoryLinesCount()),
                 new Point(myTermSize.getColumns(), myTerminalTextBuffer.getScreenLinesCount()));
-        mySelection.set(selection);
-        doOnTextSelected();
+        updateSelection(selection, true);
     }
 
     @NotNull
@@ -2104,7 +2118,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
             Pair<Point, Point> points = mySelection.get().pointsForRun(myTermSize.getColumns());
             copySelection(points.getFirst(), points.getSecond(), useSystemSelectionClipboardIfAvailable);
             if (unselect) {
-                doOnTextUnselected();
+                updateSelection(null, true);
                 repaint();
             }
         }
@@ -2244,12 +2258,25 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         return modifiers;
     }
 
-    private void doOnTextSelected() {
-        selectedText.set(getSelectedText());
+    private void updateSelection(TerminalSelection selection, boolean updateSelectedText) {
+        this.updateSelectedText = updateSelectedText;
+        //change listener -> updateSelectedText()
+        mySelection.set(selection);
     }
 
-    private void doOnTextUnselected() {
-        mySelection.set(null);
-        selectedText.set(null);
+    private void updateSelectedText() {
+        if (this.updateSelectedText || mySelection.get() == null) {
+            selectedText.set(getSelectedText());
+        }
+        this.updateSelectedText = true;
     }
+
+//    private void doOnTextSelected() {
+//        selectedText.set(getSelectedText());
+//    }
+//
+//    private void doOnTextUnselected() {
+//        mySelection.set(null);
+//        selectedText.set(null);
+//    }
 }
