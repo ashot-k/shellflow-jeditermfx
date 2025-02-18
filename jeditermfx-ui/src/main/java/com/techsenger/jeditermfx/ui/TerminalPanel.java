@@ -640,6 +640,9 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     public void setFindResult(@Nullable FindResult findResult) {
         myFindResult = findResult;
+        if (myFindResult != null && !myFindResult.getItems().isEmpty()) {
+            selectFindResultItem(myFindResult.selectedItem());
+        }
         repaint();
     }
 
@@ -656,27 +659,31 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
     }
 
     protected @Nullable FindResult selectPrevOrNextFindResultItem(boolean next) {
-        int historyLineCount = getTerminalTextBuffer().getHistoryLinesCount();
-        int screenLineCount = getTerminalTextBuffer().getScreenLinesCount();
         if (myFindResult != null && !myFindResult.getItems().isEmpty()) {
             FindResult.FindItem item = next ? myFindResult.nextFindItem() : myFindResult.prevFindItem();
-            var selection = new TerminalSelection(new Point(item.getStart().x,
-                    item.getStart().y - myTerminalTextBuffer.getHistoryLinesCount()),
-                    new Point(item.getEnd().x, item.getEnd().y - myTerminalTextBuffer.getHistoryLinesCount()));
-            updateSelection(selection, true);
-            logger.debug("Find selection start: {} / {}, end: {} / {}", item.getStart().x, item.getStart().y,
-                    item.getEnd().x, item.getEnd().y);
-            if (mySelection.get().getStart().y < getTerminalTextBuffer().getHeight() / 2) {
-                var value = FxScrollBarUtils.getValueFor(item.getStart().y, historyLineCount + screenLineCount,
-                        scrollBar.getMin(), scrollBar.getMax());
-                this.scrollBar.setValue(value);
-            } else {
-                this.scrollBar.setValue(this.scrollBar.getMax());
-            }
+            selectFindResultItem(item);
             repaint();
             return myFindResult;
         }
         return null;
+    }
+
+    protected void selectFindResultItem(FindResult.FindItem item) {
+        int historyLineCount = getTerminalTextBuffer().getHistoryLinesCount();
+        int screenLineCount = getTerminalTextBuffer().getScreenLinesCount();
+        var selection = new TerminalSelection(new Point(item.getStart().x,
+                    item.getStart().y - myTerminalTextBuffer.getHistoryLinesCount()),
+                    new Point(item.getEnd().x, item.getEnd().y - myTerminalTextBuffer.getHistoryLinesCount()));
+        updateSelection(selection, true);
+        logger.debug("Find selection start: {} / {}, end: {} / {}", item.getStart().x, item.getStart().y,
+                item.getEnd().x, item.getEnd().y);
+        if (mySelection.get().getStart().y < getTerminalTextBuffer().getHeight() / 2) {
+            var value = FxScrollBarUtils.getValueFor(item.getStart().y, historyLineCount + screenLineCount,
+                    scrollBar.getMin(), scrollBar.getMax());
+            this.scrollBar.setValue(value);
+        } else {
+            this.scrollBar.setValue(this.scrollBar.getMax());
+        }
     }
 
     static class WeakRedrawTimer implements EventHandler<ActionEvent> {
