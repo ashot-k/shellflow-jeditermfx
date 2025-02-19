@@ -99,7 +99,7 @@ public class SubstringFinder {
         return myResult;
     }
 
-    public static final class FindResultImpl implements FindResult {
+    protected static final class FindResultImpl implements FindResult {
 
         private final List<FindItemImpl> items = new ArrayList<>();
 
@@ -135,7 +135,7 @@ public class SubstringFinder {
             return start < end ? new Pair<>(start, end) : null;
         }
 
-        public static class FindItemImpl implements FindItem {
+        protected static class FindItemImpl implements FindItem {
 
             final ArrayList<TextToken> tokens;
 
