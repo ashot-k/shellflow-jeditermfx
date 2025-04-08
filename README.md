@@ -108,9 +108,8 @@ To run application using maven plugin execute the following commands in the root
     cd jeditermfx-app
     mvn javafx:run
 
-Please note, that debugger settings are in `jeditermfx-app/pom.xml` file.
-
-If you want to try a dark theme, uncomment the following line in the JavaFX plugin configuration in the pom.xml file:
+Please note, that debugger settings are in `jeditermfx-app/pom.xml` file. If you want to try a dark theme,
+uncomment the following line in the JavaFX plugin configuration in the pom.xml file:
 
 ```
 <!--<commandlineArgs>theme=dark</commandlineArgs>-->
