@@ -11,6 +11,7 @@
 * [Terminal Comparison](#comparison)
 * [Usage](#usage)
     * [Dependencies](#usage-dependencies)
+    * [Dark Theme](#usage-dark-theme)
     * [Hyperlinks](#usage-hyperlinks)
 * [Code building](#code-building)
 * [Running the Application](#application)
@@ -74,6 +75,11 @@ This project is available on Maven Central:
 </dependency>
 ```
 
+### Dark Theme <a name="usage-dark-theme"></a>
+
+If you need a dark theme, you should override the `getDefaultForeground()` and `getDefaultBackground()` methods in
+`UserSettingsProvider`. To run the demo application in dark theme see [Using Maven](#application-maven).
+
 ### Hyperlinks <a name="usage-hyperlinks"></a>
 
 JediTermFX provides a wide range of features when working with links. The `HighlightMode` enumeration specifies multiple
@@ -103,6 +109,13 @@ To run application using maven plugin execute the following commands in the root
     mvn javafx:run
 
 Please note, that debugger settings are in `jeditermfx-app/pom.xml` file.
+
+If you want to try a dark theme, uncomment the following line in the JavaFX plugin configuration in the pom.xml file:
+
+```
+<!--<commandlineArgs>theme=dark</commandlineArgs>-->
+```
+This will make JediTermFX use the `DarkThemeSettingsProvider`.
 
 ### Using Distro <a name="application-distro"></a>
 

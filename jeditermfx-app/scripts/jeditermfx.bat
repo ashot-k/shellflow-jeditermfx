@@ -72,7 +72,7 @@ set MODULEPATH=%APP_HOME%\lib
 
 
 @rem Execute JediTerm
-"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %JEDI_TERM_OPTS%  --module-path "%MODULEPATH%" -m com.techsenger.jeditermfx.app/com.techsenger.jeditermfx.app.JediTermFxMain %*
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %JEDI_TERM_OPTS%  --module-path "%MODULEPATH%" -m com.techsenger.jeditermfx.app/com.techsenger.jeditermfx.app.JediTermFx %*
 
 :end
 @rem End local scope for the variables with windows NT shell

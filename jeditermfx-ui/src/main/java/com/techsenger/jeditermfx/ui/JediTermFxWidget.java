@@ -7,6 +7,7 @@ import com.techsenger.jeditermfx.core.TerminalDisplay;
 import com.techsenger.jeditermfx.core.TerminalExecutorServiceManager;
 import com.techsenger.jeditermfx.core.TerminalMode;
 import com.techsenger.jeditermfx.core.TerminalStarter;
+import com.techsenger.jeditermfx.core.TextStyle;
 import com.techsenger.jeditermfx.core.TtyBasedArrayDataStream;
 import com.techsenger.jeditermfx.core.TtyConnector;
 import com.techsenger.jeditermfx.core.model.JediTermDebouncerImpl;
@@ -148,7 +149,9 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
 
     protected StyleState createDefaultStyle() {
         StyleState styleState = new StyleState();
-        styleState.setDefaultStyle(mySettingsProvider.getDefaultStyle());
+        var style = new TextStyle(mySettingsProvider.getDefaultForeground(),
+                mySettingsProvider.getDefaultBackground());
+        styleState.setDefaultStyle(style);
         return styleState;
     }
 

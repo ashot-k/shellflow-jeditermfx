@@ -1,9 +1,9 @@
 package com.techsenger.jeditermfx.app.example;
 
+import com.techsenger.jeditermfx.app.DarkThemeSettingsProvider;
 import com.techsenger.jeditermfx.app.pty.PtyProcessTtyConnector;
 import com.techsenger.jeditermfx.core.TtyConnector;
 import com.techsenger.jeditermfx.ui.JediTermFxWidget;
-import com.techsenger.jeditermfx.ui.settings.DefaultSettingsProvider;
 import com.pty4j.PtyProcess;
 import com.pty4j.PtyProcessBuilder;
 import org.jetbrains.annotations.NotNull;
@@ -23,7 +23,7 @@ public class BasicTerminalShellExample extends Application {
     private static final Logger logger = LoggerFactory.getLogger(BasicTerminalShellExample.class);
 
     private @NotNull JediTermFxWidget createTerminalWidget() {
-        JediTermFxWidget widget = new JediTermFxWidget(80, 24, new DefaultSettingsProvider());
+        JediTermFxWidget widget = new JediTermFxWidget(80, 24, new DarkThemeSettingsProvider());
         widget.setTtyConnector(createTtyConnector());
         widget.addHyperlinkFilter(new DefaultHyperlinkFilter());
         widget.start();

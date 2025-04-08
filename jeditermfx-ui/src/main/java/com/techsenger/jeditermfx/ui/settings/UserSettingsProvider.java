@@ -2,7 +2,6 @@ package com.techsenger.jeditermfx.ui.settings;
 
 import org.jetbrains.annotations.NotNull;
 import javafx.scene.text.Font;
-import java.util.Objects;
 import com.techsenger.jeditermfx.core.HyperlinkStyle;
 import com.techsenger.jeditermfx.core.TerminalColor;
 import com.techsenger.jeditermfx.core.TextStyle;
@@ -33,20 +32,11 @@ public interface UserSettingsProvider {
     }
 
     default @NotNull TerminalColor getDefaultForeground() {
-        return Objects.requireNonNull(getDefaultStyle().getForeground());
+        return TerminalColor.BLACK;
     }
 
     default @NotNull TerminalColor getDefaultBackground() {
-        return Objects.requireNonNull(getDefaultStyle().getBackground());
-    }
-
-    /**
-     * @deprecated override {@link UserSettingsProvider#getDefaultForeground()} and
-     * {@link UserSettingsProvider#getDefaultBackground()} instead
-     */
-    @Deprecated
-    default @NotNull TextStyle getDefaultStyle() {
-        return new TextStyle(TerminalColor.BLACK, TerminalColor.WHITE);
+        return TerminalColor.WHITE;
     }
 
     @NotNull
