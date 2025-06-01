@@ -7,6 +7,11 @@
 ## Table of Contents
 * [Overview](#overview)
 * [Demo](#demo)
+    * [Htop](#demo-htop)
+    * [Tig](#demo-tig)
+    * [MC](#demo-mc)
+    * [Maven](#demo-maven)
+    * [Bastet](#demo-bastet)
 * [Features](#features)
 * [Terminal Comparison](#comparison)
 * [Usage](#usage)
@@ -30,7 +35,25 @@ any JavaFX application. A detailed comparison of terminal libraries is provided 
 
 ## Demo <a name="demo"></a>
 
-![JediTermFX demo](./demo.gif)
+### Htop <a name="demo-htop"></a>
+
+![htop-dark](https://github.com/user-attachments/assets/b390eb08-3897-4ad4-b77f-c55ed395c2a3)
+
+### Tig <a name="demo-tig"></a>
+
+![tig](https://github.com/user-attachments/assets/7e1ace65-bf49-4e2c-bb0e-adb7c89b5857)
+
+### MC <a name="demo-mc"></a>
+
+![mc](https://github.com/user-attachments/assets/f2189273-24ca-4420-908b-fa6d1d4d0df0)
+
+### Maven <a name="demo-maven"></a>
+
+![mvn](https://github.com/user-attachments/assets/51bf7b95-09e4-4d62-877b-b214d1a1d7e7)
+
+### Bastet <a name="demo-bastet"></a>
+
+![bastet](https://github.com/user-attachments/assets/d399109b-87c5-4bf3-a860-51341efe85d6)
 
 ## Features <a name="features"></a>
 
