@@ -1997,38 +1997,48 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 
     private static final byte ASCII_ESC = 27;
 
+    private static final byte ASCII_ETX = 3;
+
     private boolean processTerminalKeyPressed(KeyEvent e) {
         if (hasUncommittedChars()) {
             return false;
         }
         try {
-            final KeyCode keycode = e.getCode();
-            final char keychar;
-            if (!e.getText().isEmpty()) {
-                keychar = e.getText().charAt(0);
-            } else {
-                keychar = '\uffff';
-            }
+            final KeyCode keyCode = e.getCode();
             // numLock does not change the code sent by keypad VK_DELETE
             // although it send the char '.'
-            if (keycode == KeyCode.DELETE && keychar == '.') {
-                myTerminalStarter.sendBytes(new byte[]{'.'}, true);
-                return true;
-            }
-            // CTRL + Space is not handled in KeyEvent; handle it manually
-            if (keychar == ' ' && e.isControlDown()) {
-                myTerminalStarter.sendBytes(new byte[]{ASCII_NUL}, true);
-                return true;
+//            if (keycode == KeyCode.DELETE && keychar == '.') {
+//                myTerminalStarter.sendBytes(new byte[]{'.'}, true);
+//                return true;
+//            }
+            if (e.isControlDown()) {
+                // CTRL + Space is not handled in KeyEvent; handle it manually
+                if (keyCode == KeyCode.SPACE) {
+                    myTerminalStarter.sendBytes(new byte[]{ASCII_NUL}, true);
+                    return true;
+                }
+                //Ctrl+C sends ASCII 3 (ETX) in Linux but gets intercepted as copy
+                //command in Windows, sending just 'c' (code 99) instead
+                if (keyCode == KeyCode.C) {
+                    myTerminalStarter.sendBytes(new byte[]{ASCII_ETX}, true);
+                    return true;
+                }
             }
             final byte[] code = myTerminalStarter.getTerminal().getCodeForKey(e.getCode().getCode(), getModifiersEx(e));
             if (code != null) {
                 myTerminalStarter.sendBytes(code, true);
-                if (mySettingsProvider.scrollToBottomOnTyping() && isCodeThatScrolls(keycode)) {
+                if (mySettingsProvider.scrollToBottomOnTyping() && isCodeThatScrolls(keyCode)) {
                     scrollToBottom();
                 }
                 return true;
             }
-            if (isAltPressedOnly(e) && Character.isDefined(keychar) && mySettingsProvider.altSendsEscape()) {
+            final char keyChar;
+            if (!e.getText().isEmpty()) {
+                keyChar = e.getText().charAt(0);
+            } else {
+                keyChar = '\uffff';
+            }
+            if (isAltPressedOnly(e) && Character.isDefined(keyChar) && mySettingsProvider.altSendsEscape()) {
                 // Cannot use e.getKeyChar() on macOS:
                 //  Option+f produces e.getKeyChar()='ƒ' (402), but 'f' (102) is needed.
                 //  Option+b produces e.getKeyChar()='∫' (8747), but 'b' (98) is needed.
@@ -2037,7 +2047,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
             }
             if (e.getText().length() > 0 && Character.isISOControl(e.getText().codePointAt(0))) {
                 // keys filtered out here will be processed in processTerminalKeyTyped
-                return processCharacter(e, keychar);
+                return processCharacter(e, keyChar);
             }
         } catch (Exception ex) {
             logger.error("Error sending pressed key to emulator", ex);
