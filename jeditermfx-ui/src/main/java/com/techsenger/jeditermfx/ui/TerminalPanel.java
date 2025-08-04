@@ -2011,7 +2011,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 //                myTerminalStarter.sendBytes(new byte[]{'.'}, true);
 //                return true;
 //            }
-            if (e.isControlDown()) {
+            if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown() && !e.isMetaDown()) {
                 // CTRL + Space is not handled in KeyEvent; handle it manually
                 if (keyCode == KeyCode.SPACE) {
                     myTerminalStarter.sendBytes(new byte[]{ASCII_NUL}, true);
