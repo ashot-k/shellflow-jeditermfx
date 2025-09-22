@@ -481,4 +481,11 @@ public class JediTermFxWidget implements TerminalSession, TerminalWidget, Termin
     public void removeListener(TerminalWidgetListener listener) {
         myListeners.remove(listener);
     }
+
+    public boolean isShowingFind(){
+        if(myFindComponent == null){
+            return false;
+        }
+        return myInnerPanel.getChildren().contains(myFindComponent.getPane());
+    }
 }

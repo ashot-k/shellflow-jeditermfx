@@ -296,7 +296,7 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
         return new DefaultTerminalCopyPasteHandler();
     }
 
-    protected void reinitFontAndResize() {
+    public void reinitFontAndResize() {
         initFont();
         sizeTerminalFromComponent();
     }
@@ -2011,6 +2011,10 @@ public class TerminalPanel implements TerminalDisplay, TerminalActionProvider {
 //                myTerminalStarter.sendBytes(new byte[]{'.'}, true);
 //                return true;
 //            }
+            if (keyCode == KeyCode.ESCAPE) {
+                myTerminalStarter.sendBytes(new byte[]{ASCII_ESC}, true);
+                return true;
+            }
             if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown() && !e.isMetaDown()) {
                 // CTRL + Space is not handled in KeyEvent; handle it manually
                 if (keyCode == KeyCode.SPACE) {
