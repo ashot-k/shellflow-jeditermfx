@@ -2,12 +2,11 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>com.techsenger.jeditermfx</groupId>
-        <artifactId>jeditermfx</artifactId>
-        <version>1.2.0-SNAPSHOT</version>
+        <groupId>org.ashot</groupId>
+        <artifactId>shellflow-jeditermfx</artifactId>
+        <version>1.2.1</version>
     </parent>
 
-    <groupId>com.techsenger.jeditermfx</groupId>
     <artifactId>jeditermfx-app</artifactId>
     <packaging>jar</packaging>
     <name>JediTermFX - App</name>
@@ -52,11 +51,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.techsenger.jeditermfx</groupId>
-            <artifactId>jeditermfx-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.techsenger.jeditermfx</groupId>
+            <groupId>org.ashot</groupId>
             <artifactId>jeditermfx-ui</artifactId>
         </dependency>
         <dependency>
